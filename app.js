@@ -2,7 +2,7 @@
    NOVA CORE 賽特 II｜AI 實戰分析終端  —  app.js
 ================================================================ */
 
-const ACCESS_CODE = (function(){var _c=[65,65,65,56,56,56];return _c.map(function(n){return String.fromCharCode(n);}).join('');})();
+const ACCESS_CODE = String.fromCharCode(65, 65, 65, 56, 56, 56);
 
 // ════════════════════════════════════════
 // 文字庫
@@ -257,33 +257,38 @@ let memberTimer = null;
 // ════════════════════════════════════════
 // DOM
 // ════════════════════════════════════════
-const loginScreen   = document.getElementById('loginScreen');
-const dashboard     = document.getElementById('dashboard');
-const passwordInput = document.getElementById('passwordInput');
-const loginBtn      = document.getElementById('loginBtn');
-const loginError    = document.getElementById('loginError');
-const logoutBtn     = document.getElementById('logoutBtn');
-const refreshBtn    = document.getElementById('refreshBtn');
-const cardsGrid     = document.getElementById('cardsGrid');
-const syncTimeEl    = document.getElementById('syncTime');
-const loadValueEl   = document.getElementById('loadValue');
+const loginScreen = document.getElementById('loginScreen');
+const dashboard   = document.getElementById('dashboard');
+const loginBtn    = document.getElementById('loginBtn');
+const loginError  = document.getElementById('loginError');
+const logoutBtn   = document.getElementById('logoutBtn');
+const refreshBtn  = document.getElementById('refreshBtn');
+const cardsGrid   = document.getElementById('cardsGrid');
+const syncTimeEl  = document.getElementById('syncTime');
+const loadValueEl = document.getElementById('loadValue');
 
 // ════════════════════════════════════════
 // 登入 / 登出
 // ════════════════════════════════════════
-loginBtn.addEventListener('click', tryLogin);
-passwordInput.addEventListener('keydown', e => { if (e.key === 'Enter') tryLogin(); });
+document.getElementById('loginBtn').addEventListener('click', handleLogin);
+document.getElementById('accessCode').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') handleLogin();
+});
 
-function tryLogin() {
-  if (passwordInput.value.trim() === ACCESS_CODE) {
+function handleLogin() {
+  const input = document.getElementById('accessCode');
+  const code  = input.value.trim().toUpperCase();
+  if (code === ACCESS_CODE) {
     loginError.textContent = '';
+    document.body.classList.add('unlocked');
+    localStorage.setItem('nova_core_access', '1');
     loginScreen.classList.add('hidden');
     dashboard.classList.remove('hidden');
     initDashboard();
   } else {
     loginError.textContent = '⚠ 授權碼錯誤，請重新輸入';
-    passwordInput.value = '';
-    passwordInput.focus();
+    input.value = '';
+    input.focus();
   }
 }
 
@@ -292,7 +297,9 @@ logoutBtn.addEventListener('click', () => {
   clearInterval(memberTimer);
   dashboard.classList.add('hidden');
   loginScreen.classList.remove('hidden');
-  passwordInput.value = '';
+  document.getElementById('accessCode').value = '';
+  document.body.classList.remove('unlocked');
+  localStorage.removeItem('nova_core_access');
   loginError.textContent = '';
   rooms = [];
 });
