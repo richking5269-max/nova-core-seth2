@@ -421,3 +421,56 @@ function cardHTML(r) {
       <div class="energy-fill" style="width:${energyPct(r.prob)}%"></div>
     </div>`;
 }
+  return el;
+}
+
+function patchCard(el, r) {
+  const tier = getTier(r.prob);
+  el.className = `card tier-${tier}`;
+
+  const probEl = el.querySelector('.prob-value');
+  if (probEl) { probEl.textContent = fmtProb(r.prob); probEl.className = `prob-value tier-${tier}`; }
+
+  const badgeEl = el.querySelector('.card-tier-badge');
+  if (badgeEl) { badgeEl.textContent = getBadgeLabel(r.prob); badgeEl.className = `card-tier-badge badge-${tier}`; }
+
+  const fillEl = el.querySelector('.energy-fill');
+  if (fillEl) { fillEl.style.width = energyPct(r.prob) + '%'; }
+
+  const cmdEl = el.querySelector('.cmd-row');
+  if (cmdEl) { cmdEl.className = `cmd-row${tier === 's' ? ' tier-s' : tier === 'b' ? ' tier-b' : ''}`; }
+}
+
+function energyPct(prob) {
+  return ((prob - 70) / (98.8 - 70) * 100).toFixed(1);
+}
+
+function cardHTML(r) {
+  const tier     = getTier(r.prob);
+  const badgeCls = `badge-${tier}`;
+  const cmdCls   = tier === 's' ? ' tier-s' : tier === 'b' ? ' tier-b' : '';
+  const sigHTML  = r.signals.map(s => `
+    <div class="signal-item">
+      <span class="signal-tag tag-${s.tag.toLowerCase()}">${s.tag}級</span>
+      <span>${s.text}</span>
+    </div>`).join('');
+
+  return `
+    <div class="card-header">
+      <span class="card-room">${r.name}</span>
+      <span class="card-tier-badge ${badgeCls}">${getBadgeLabel(r.prob)}</span>
+    </div>
+    <div class="prob-row">
+      <span class="prob-label">爆分機率</span>
+      <span class="prob-value tier-${tier}">${fmtProb(r.prob)}</span>
+    </div>
+    <div class="signals">${sigHTML}</div>
+    <div class="cmd-row${cmdCls}">${r.cmd}</div>
+    <div class="energy-bar">
+      <div class="energy-fill" style="width:${energyPct(r.prob)}%"></div>
+    </div>`;
+}
+="energy-bar">
+      <div class="energy-fill" style="width:${energyPct(r.prob)}%"></div>
+    </div>`;
+}
