@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOVA CORE 賽特 II｜AI 實戰分析終端</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script>
+    (function(){
+      document.addEventListener("contextmenu",function(e){e.preventDefault();});
+      document.addEventListener("keydown",function(e){
+        var k=(e.key||"").toUpperCase();
+        if(e.key==="F12"||
+           (e.ctrlKey&&e.shiftKey&&["I","J","C"].includes(k))||
+           (e.ctrlKey&&["U","S"].includes(k))){
+          e.preventDefault();
+          e.stopPropagation();
+          return false;
+        }
+      },true);
+    })();
+  </script>
+</head>
+<body>
+
+  <!-- 登入畫面 -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-bg-glow"></div>
+    <div class="scanlines"></div>
+    <section class="login-card">
+      <div class="terminal-dot-row"><span></span><span></span><span></span></div>
+      <p class="eyebrow">NOVA CORE INTERNAL ACCESS</p>
+      <h1>NOVA CORE 賽特 II</h1>
+      <h2>AI 實戰分析終端</h2>
+      <p class="login-desc">請輸入授權碼進入觀察系統</p>
+      <div class="password-row">
+        <input id="passwordInput" type="password" placeholder="輸入授權碼" autocomplete="off" />
+        <button id="loginBtn">授權存取</button>
+      </div>
+      <p id="loginError" class="login-error"></p>
+      <p class="login-note">僅供內部測試與數據觀察使用</p>
+    </section>
+  </div>
+
+  <!-- 主儀表板 -->
+  <main id="dashboard" class="dashboard hidden">
+
+    <!-- 跑馬燈（文字由 JS 動態插入） -->
+    <div class="ticker-wrap">
+      <div id="tickerTrack" class="ticker-track"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="topbar">
+      <div class="brand-block">
+        <div class="terminal-icon">⌁</div>
+        <div>
+          <h1>NOVA CORE 賽特 II <span class="title-sub">AI 實戰分析終端</span></h1>
+          <p class="brand-en">NOVA-CORE SAITER-II REALTIME SIGNAL TERMINAL</p>
+        </div>
+      </div>
+      <div class="status-block">
+        <div class="status-pill"><span class="pulse"></span>伺服器：亞太一區（連線正常）</div>
+        <div class="status-pill">系統負載：<b id="loadValue">37.2%</b></div>
+        <div class="status-pill">數據同步：<b id="syncTime">--:--:--</b></div>
+        <button id="refreshBtn" class="refresh-btn">⟳ 立即刷新</button>
+        <button id="logoutBtn" class="ghost-btn">離開</button>
+      </div>
+    </header>
+
+    <!-- 卡片區 -->
+    <section id="cardsGrid" class="cards-grid"></section>
+
+  </main>
+
+  <script src="app.min.js"></script>
+</body>
+</html>
