@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NOVA CORE 賽特 II｜AI 實戰分析終端</title>
+  <title>NOVA CORE 賽特 II&#65372;AI 實戰分析終端</title>
   <link rel="stylesheet" href="styles.css" />
   <script>
     (function(){
@@ -42,10 +42,23 @@
     </section>
   </div>
 
+  <!-- 分析流程畫面 -->
+  <div id="analyseScreen" class="analyse-screen hidden">
+    <div class="analyse-inner">
+      <div class="analyse-icon">&#9711;</div>
+      <p class="analyse-title">NOVA CORE 正在建立分析通道</p>
+      <p id="analyseStep" class="analyse-step">初始化安全通道</p>
+      <div class="analyse-bar-wrap">
+        <div id="analyseBar" class="analyse-bar"></div>
+      </div>
+      <p class="analyse-hint">NOVA-CORE SAITER-II &middot; SIGNAL ANALYSIS ENGINE</p>
+    </div>
+  </div>
+
   <!-- 主儀表板 -->
   <main id="dashboard" class="dashboard hidden">
 
-    <!-- 跑馬燈（文字由 JS 動態插入） -->
+    <!-- 跑馬燈 -->
     <div class="ticker-wrap">
       <div id="tickerTrack" class="ticker-track"></div>
     </div>
@@ -68,8 +81,41 @@
       </div>
     </header>
 
+    <!-- Summary Cards -->
+    <section class="summary-grid">
+      <div class="summary-card">
+        <span class="sc-label">觀察房間</span>
+        <span id="sumTotal" class="sc-value cyan">40</span>
+      </div>
+      <div class="summary-card">
+        <span class="sc-label">S 級房間</span>
+        <span id="sumS" class="sc-value pink">—</span>
+      </div>
+      <div class="summary-card">
+        <span class="sc-label">A 級房間</span>
+        <span id="sumA" class="sc-value cyan">—</span>
+      </div>
+      <div class="summary-card">
+        <span class="sc-label">平均爆發率</span>
+        <span id="sumAvg" class="sc-value cyan">—</span>
+      </div>
+      <div class="summary-card">
+        <span class="sc-label">最高房號</span>
+        <span id="sumTop" class="sc-value cyan">—</span>
+      </div>
+      <div class="summary-card">
+        <span class="sc-label">同步狀態</span>
+        <span class="sc-value cyan sc-sync"><span class="pulse"></span>即時同步中</span>
+      </div>
+    </section>
+
     <!-- 卡片區 -->
     <section id="cardsGrid" class="cards-grid"></section>
+
+    <!-- 底部說明 -->
+    <footer class="system-note">
+      NOVA CORE 依據房號平轉狀態、免遊符號分佈、倍數球位置、寶石連消與大圖集中度進行即時觀察。結果僅供內部測試與版面參考，不代表固定結果。
+    </footer>
 
   </main>
 

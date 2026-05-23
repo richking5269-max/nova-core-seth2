@@ -1,5 +1,5 @@
 /* ================================================================
-   NOVA CORE 賽特 II｜AI 實戰分析終端  —  app.js
+   NOVA CORE 賽特 II | AI 實戰分析終端  —  app.js
 ================================================================ */
 
 const ACCESS_CODE = String.fromCharCode(65, 65, 65, 56, 56, 56);
@@ -141,13 +141,40 @@ const lowCommands = [
   '連消條件不足，建議冷卻後再觀察。',
 ];
 
+const loadingTexts = [
+  '建立安全連線...',
+  '同步亞太節點...',
+  '載入房號資料...',
+  '掃描免遊符號...',
+  '比對 S 級特徵...',
+  '分析倍率模型...',
+  '計算爆分機率...',
+  '建立房號排序...',
+  '篩選高分房間...',
+  '校準版面訊號...',
+  '偵測倍數球位置...',
+  '分析寶石連消...',
+  '比對主圖分佈...',
+];
+
+const analyseSteps = [
+  '初始化安全通道',
+  '同步亞太節點',
+  '載入房號池',
+  '掃描免遊符號',
+  '比對 S 級特徵',
+  '分析寶石連消',
+  '校準倍數球位置',
+  '計算爆分機率',
+  '生成房號排序',
+];
+
 // ════════════════════════════════════════
 // 工具函式
 // ════════════════════════════════════════
-const rand      = (a, b) => Math.random() * (b - a) + a;
-const randInt   = (a, b) => Math.floor(rand(a, b + 1));
-const randomFrom = arr  => arr[randInt(0, arr.length - 1)];
-const randomBetween = (a, b) => rand(a, b);
+const rand        = (a, b) => Math.random() * (b - a) + a;
+const randInt     = (a, b) => Math.floor(rand(a, b + 1));
+const randomFrom  = arr  => arr[randInt(0, arr.length - 1)];
 
 function fmtRoom(n) { return '房號' + String(n).padStart(4, '0'); }
 function fmtProb(n) { return n.toFixed(2) + '%'; }
@@ -158,8 +185,8 @@ function fmtProb(n) { return n.toFixed(2) + '%'; }
 let onlineMembers = randInt(129, 561);
 
 function updateOnlineMembers() {
-  const change = randInt(-9, 9);
-  onlineMembers = Math.max(129, Math.min(561, onlineMembers + change));
+  const delta = randInt(-9, 9);
+  onlineMembers = Math.max(129, Math.min(561, onlineMembers + delta));
   renderTicker();
 }
 
@@ -190,6 +217,7 @@ function getTier(prob) {
   if (prob >= 75) return 'a';
   return 'b';
 }
+
 function getBadgeLabel(prob) {
   if (prob >= 95) return 'S 級';
   if (prob >= 85) return 'A 級';
@@ -218,7 +246,7 @@ function buildCommand(prob) {
 }
 
 // ════════════════════════════════════════
-// 建立房間（房號、訊號、指令固定）
+// 建立房間
 // ════════════════════════════════════════
 function makeRoom(roomNum) {
   const prob = parseFloat(rand(70.00, 98.80).toFixed(2));
@@ -232,7 +260,7 @@ function makeRoom(roomNum) {
 }
 
 // ════════════════════════════════════════
-// 機率浮動（每秒，只動機率）
+// 機率浮動（每秒）
 // ════════════════════════════════════════
 function fluctuateRate(prob) {
   let rangeMin, rangeMax;
@@ -240,10 +268,8 @@ function fluctuateRate(prob) {
   else if (prob >= 90) { rangeMin = 0.03; rangeMax = 0.08; }
   else if (prob >= 85) { rangeMin = 0.05; rangeMax = 0.12; }
   else                 { rangeMin = 0.08; rangeMax = 0.18; }
-
-  const range     = randomBetween(rangeMin, rangeMax);
-  const direction = Math.random() > 0.5 ? 1 : -1;
-  const next      = prob + direction * range;
+  const delta     = rand(rangeMin, rangeMax) * (Math.random() > 0.5 ? 1 : -1);
+  const next      = prob + delta;
   return parseFloat(Math.max(70, Math.min(98.8, next)).toFixed(2));
 }
 
@@ -253,22 +279,23 @@ function fluctuateRate(prob) {
 let rooms       = [];
 let tickTimer   = null;
 let memberTimer = null;
+let revealed    = false;   // true = loading 完成，才允許每秒浮動
 
 // ════════════════════════════════════════
-// DOM
+// DOM refs
 // ════════════════════════════════════════
-const loginScreen = document.getElementById('loginScreen');
-const dashboard   = document.getElementById('dashboard');
-const loginBtn    = document.getElementById('loginBtn');
-const loginError  = document.getElementById('loginError');
-const logoutBtn   = document.getElementById('logoutBtn');
-const refreshBtn  = document.getElementById('refreshBtn');
-const cardsGrid   = document.getElementById('cardsGrid');
-const syncTimeEl  = document.getElementById('syncTime');
-const loadValueEl = document.getElementById('loadValue');
+const loginScreen  = document.getElementById('loginScreen');
+const analyseScreen= document.getElementById('analyseScreen');
+const dashboard    = document.getElementById('dashboard');
+const loginError   = document.getElementById('loginError');
+const logoutBtn    = document.getElementById('logoutBtn');
+const refreshBtn   = document.getElementById('refreshBtn');
+const cardsGrid    = document.getElementById('cardsGrid');
+const syncTimeEl   = document.getElementById('syncTime');
+const loadValueEl  = document.getElementById('loadValue');
 
 // ════════════════════════════════════════
-// 登入 / 登出
+// 登入
 // ════════════════════════════════════════
 document.getElementById('loginBtn').addEventListener('click', handleLogin);
 document.getElementById('accessCode').addEventListener('keydown', function(e) {
@@ -283,8 +310,7 @@ function handleLogin() {
     document.body.classList.add('unlocked');
     localStorage.setItem('nova_core_access', '1');
     loginScreen.classList.add('hidden');
-    dashboard.classList.remove('hidden');
-    initDashboard();
+    startAnalyseScreen();
   } else {
     loginError.textContent = '⚠ 授權碼錯誤，請重新輸入';
     input.value = '';
@@ -292,10 +318,17 @@ function handleLogin() {
   }
 }
 
+// ════════════════════════════════════════
+// 登出
+// ════════════════════════════════════════
 logoutBtn.addEventListener('click', () => {
   clearInterval(tickTimer);
   clearInterval(memberTimer);
+  tickTimer = null;
+  memberTimer = null;
+  revealed = false;
   dashboard.classList.add('hidden');
+  analyseScreen.classList.add('hidden');
   loginScreen.classList.remove('hidden');
   document.getElementById('accessCode').value = '';
   document.body.classList.remove('unlocked');
@@ -305,172 +338,229 @@ logoutBtn.addEventListener('click', () => {
 });
 
 // ════════════════════════════════════════
+// P1 分析流程畫面（3~5 秒）
+// ════════════════════════════════════════
+function startAnalyseScreen() {
+  analyseScreen.classList.remove('hidden');
+
+  const totalMs  = 3800;
+  const barEl    = document.getElementById('analyseBar');
+  const stepEl   = document.getElementById('analyseStep');
+  const steps    = analyseSteps;
+  const stepMs   = totalMs / steps.length;
+  let   stepIdx  = 0;
+  let   elapsed  = 0;
+  const tickMs   = 30;
+
+  stepEl.textContent = steps[0];
+
+  const timer = setInterval(() => {
+    elapsed += tickMs;
+    const pct = Math.min(100, (elapsed / totalMs) * 100);
+    barEl.style.width = pct + '%';
+
+    const newIdx = Math.min(steps.length - 1, Math.floor(elapsed / stepMs));
+    if (newIdx !== stepIdx) {
+      stepIdx = newIdx;
+      stepEl.textContent = steps[stepIdx];
+    }
+
+    if (elapsed >= totalMs) {
+      clearInterval(timer);
+      barEl.style.width = '100%';
+      stepEl.textContent = '分析完成，載入房號清單...';
+      setTimeout(() => {
+        analyseScreen.classList.add('fade-out');
+        setTimeout(() => {
+          analyseScreen.classList.add('hidden');
+          analyseScreen.classList.remove('fade-out');
+          initDashboard();
+        }, 500);
+      }, 400);
+    }
+  }, tickMs);
+}
+
+// ════════════════════════════════════════
 // 初始化儀表板
 // ════════════════════════════════════════
 function initDashboard() {
-  spawnRooms();
-  renderTicker();
-  renderCards();
-  updateClock();
+  rooms = genUniqueNums(40, 1, 3500).map(n => makeRoom(n));
+  rooms.sort((a, b) => b.prob - a.prob);
+  revealed = false;
 
-  // 每秒：只更新機率、排序、時鐘、負載、能量線
+  dashboard.classList.remove('hidden');
+  renderTicker();
+  updateClock();
+  renderLoadingCards();
+
+  memberTimer = setInterval(updateOnlineMembers, 10000);
+
+  startRevealSequence();
+}
+
+// ════════════════════════════════════════
+// P2 Loading 卡 → 逐張解鎖
+// ════════════════════════════════════════
+function renderLoadingCards() {
+  cardsGrid.innerHTML = '';
+  for (let i = 0; i < rooms.length; i++) {
+    cardsGrid.appendChild(buildLoadingCard(i));
+  }
+  updateSummary();
+}
+
+function buildLoadingCard(idx) {
+  const txt = loadingTexts[idx % loadingTexts.length];
+  const el  = document.createElement('div');
+  el.className = 'card loading-card';
+  el.dataset.idx = idx;
+  el.innerHTML = `
+    <div class="lc-icon">&#9711;</div>
+    <div class="lc-text">${txt}</div>
+    <div class="lc-bar-wrap"><div class="lc-bar"></div></div>`;
+  return el;
+}
+
+function startRevealSequence() {
+  let idx = 0;
+
+  const timer = setInterval(() => {
+    revealCard(idx);
+    idx++;
+    if (idx >= rooms.length) {
+      clearInterval(timer);
+      revealed = true;
+      startLiveUpdates();
+    }
+  }, randInt(80, 150));
+}
+
+function revealCard(idx) {
+  const el = cardsGrid.querySelector(`.loading-card[data-idx="${idx}"]`);
+  if (!el) return;
+  const r = rooms[idx];
+  el.className = `card tier-${getTier(r.prob)} reveal-in`;
+  el.removeAttribute('data-idx');
+  el.innerHTML = cardHTML(r, idx);
+  updateSummary();
+}
+
+// ════════════════════════════════════════
+// Live updates（loading 完成後才開始）
+// ════════════════════════════════════════
+function startLiveUpdates() {
   tickTimer = setInterval(() => {
+    if (!revealed) return;
     rooms.forEach(r => { r.prob = fluctuateRate(r.prob); });
     rooms.sort((a, b) => b.prob - a.prob);
-    renderCards();
+    patchAllCards();
     updateClock();
+    updateSummary();
   }, 1000);
-
-  // 每 10 秒更新在線會員
-  memberTimer = setInterval(updateOnlineMembers, 10000);
-}
-
-// 產生全新一批房間（房號、訊號、指令全部重抽）
-function spawnRooms() {
-  const nums = genUniqueNums(40, 1, 3500);
-  rooms = nums.map(n => makeRoom(n));
-  rooms.sort((a, b) => b.prob - a.prob);
 }
 
 // ════════════════════════════════════════
-// 立即刷新：全部重新產生
+// 立即刷新
 // ════════════════════════════════════════
 refreshBtn.addEventListener('click', () => {
-  spawnRooms();
-  renderCards();
+  clearInterval(tickTimer);
+  tickTimer = null;
+  revealed  = false;
+  rooms = genUniqueNums(40, 1, 3500).map(n => makeRoom(n));
+  rooms.sort((a, b) => b.prob - a.prob);
+  renderLoadingCards();
+  startRevealSequence();
   const orig = refreshBtn.textContent;
   refreshBtn.textContent = '✓ 已刷新';
   setTimeout(() => { refreshBtn.textContent = orig; }, 1400);
 });
 
 // ════════════════════════════════════════
-// 時鐘 & 負載（每秒）
+// 時鐘 & 負載
 // ════════════════════════════════════════
 function updateClock() {
   const n   = new Date();
   const pad = x => String(x).padStart(2, '0');
-  syncTimeEl.textContent  = `${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
-  loadValueEl.textContent = rand(35, 39).toFixed(1) + '%';
+  if (syncTimeEl)  syncTimeEl.textContent  = `${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
+  if (loadValueEl) loadValueEl.textContent = rand(35, 39).toFixed(1) + '%';
 }
 
 // ════════════════════════════════════════
-// 渲染卡片（局部更新，不閃爍）
+// Summary Cards
 // ════════════════════════════════════════
-function renderCards() {
-  const existing = cardsGrid.querySelectorAll('.card');
-  if (existing.length === rooms.length) {
-    rooms.forEach((r, i) => patchCard(existing[i], r));
-  } else {
-    cardsGrid.innerHTML = '';
-    rooms.forEach(r => cardsGrid.appendChild(buildCard(r)));
-  }
+function updateSummary() {
+  const total   = rooms.length;
+  const sCount  = rooms.filter(r => r.prob >= 95).length;
+  const aCount  = rooms.filter(r => r.prob >= 75 && r.prob < 95).length;
+  const avg     = total ? (rooms.reduce((s, r) => s + r.prob, 0) / total).toFixed(2) + '%' : '--';
+  const topRoom = total ? rooms[0].name : '--';
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('sumTotal',   total);
+  set('sumS',       sCount);
+  set('sumA',       aCount);
+  set('sumAvg',     avg);
+  set('sumTop',     topRoom);
 }
 
-function buildCard(r) {
-  const el = document.createElement('div');
-  el.className = `card tier-${getTier(r.prob)}`;
-  el.innerHTML = cardHTML(r);
-  return el;
-}
-
-// 每秒只更新：機率、badge、tier class、能量線
-// 不動：房號、訊號文字、指令
-function patchCard(el, r) {
-  const tier = getTier(r.prob);
-  el.className = `card tier-${tier}`;
-
-  const probEl = el.querySelector('.prob-value');
-  if (probEl) { probEl.textContent = fmtProb(r.prob); probEl.className = `prob-value tier-${tier}`; }
-
-  const badgeEl = el.querySelector('.card-tier-badge');
-  if (badgeEl) { badgeEl.textContent = getBadgeLabel(r.prob); badgeEl.className = `card-tier-badge badge-${tier}`; }
-
-  const fillEl = el.querySelector('.energy-fill');
-  if (fillEl) { fillEl.style.width = energyPct(r.prob) + '%'; }
-
-  const cmdEl = el.querySelector('.cmd-row');
-  if (cmdEl) { cmdEl.className = `cmd-row${tier === 's' ? ' tier-s' : tier === 'b' ? ' tier-b' : ''}`; }
-}
-
-function energyPct(prob) {
-  return ((prob - 70) / (98.8 - 70) * 100).toFixed(1);
-}
-
-function cardHTML(r) {
-  const tier     = getTier(r.prob);
-  const badgeCls = `badge-${tier}`;
-  const cmdCls   = tier === 's' ? ' tier-s' : tier === 'b' ? ' tier-b' : '';
-  const sigHTML  = r.signals.map(s => `
-    <div class="signal-item">
-      <span class="signal-tag tag-${s.tag.toLowerCase()}">${s.tag}級</span>
-      <span>${s.text}</span>
-    </div>`).join('');
-
-  return `
-    <div class="card-header">
-      <span class="card-room">${r.name}</span>
-      <span class="card-tier-badge ${badgeCls}">${getBadgeLabel(r.prob)}</span>
-    </div>
-    <div class="prob-row">
-      <span class="prob-label">爆分機率</span>
-      <span class="prob-value tier-${tier}">${fmtProb(r.prob)}</span>
-    </div>
-    <div class="signals">${sigHTML}</div>
-    <div class="cmd-row${cmdCls}">${r.cmd}</div>
-    <div class="energy-bar">
-      <div class="energy-fill" style="width:${energyPct(r.prob)}%"></div>
-    </div>`;
-}
-  return el;
+// ════════════════════════════════════════
+// 渲染卡片
+// ════════════════════════════════════════
+function patchAllCards() {
+  const cards = cardsGrid.querySelectorAll('.card:not(.loading-card)');
+  // 依目前排序重新貼 DOM 順序並 patch
+  rooms.forEach((r, i) => {
+    if (cards[i]) patchCard(cards[i], r);
+  });
 }
 
 function patchCard(el, r) {
   const tier = getTier(r.prob);
   el.className = `card tier-${tier}`;
 
-  const probEl = el.querySelector('.prob-value');
-  if (probEl) { probEl.textContent = fmtProb(r.prob); probEl.className = `prob-value tier-${tier}`; }
+  const probEl  = el.querySelector('.prob-value');
+  if (probEl)  { probEl.textContent = fmtProb(r.prob); probEl.className = `prob-value tier-${tier}`; }
 
   const badgeEl = el.querySelector('.card-tier-badge');
   if (badgeEl) { badgeEl.textContent = getBadgeLabel(r.prob); badgeEl.className = `card-tier-badge badge-${tier}`; }
 
-  const fillEl = el.querySelector('.energy-fill');
-  if (fillEl) { fillEl.style.width = energyPct(r.prob) + '%'; }
+  const fillEl  = el.querySelector('.energy-fill');
+  if (fillEl)  { fillEl.style.width = energyPct(r.prob) + '%'; }
 
-  const cmdEl = el.querySelector('.cmd-row');
-  if (cmdEl) { cmdEl.className = `cmd-row${tier === 's' ? ' tier-s' : tier === 'b' ? ' tier-b' : ''}`; }
+  const cmdEl   = el.querySelector('.cmd-row');
+  if (cmdEl)   { cmdEl.className = `cmd-row${tier === 's' ? ' tier-s' : tier === 'b' ? ' tier-b' : ''}`; }
 }
 
 function energyPct(prob) {
-  return ((prob - 70) / (98.8 - 70) * 100).toFixed(1);
+  return Math.max(12, Math.min(100, ((prob - 70) / (98.8 - 70) * 100))).toFixed(1);
 }
 
-function cardHTML(r) {
+function cardHTML(r, idx) {
   const tier     = getTier(r.prob);
-  const badgeCls = `badge-${tier}`;
+  const badgeCls = 'badge-' + tier;
   const cmdCls   = tier === 's' ? ' tier-s' : tier === 'b' ? ' tier-b' : '';
-  const sigHTML  = r.signals.map(s => `
-    <div class="signal-item">
-      <span class="signal-tag tag-${s.tag.toLowerCase()}">${s.tag}級</span>
-      <span>${s.text}</span>
-    </div>`).join('');
-
-  return `
-    <div class="card-header">
-      <span class="card-room">${r.name}</span>
-      <span class="card-tier-badge ${badgeCls}">${getBadgeLabel(r.prob)}</span>
-    </div>
-    <div class="prob-row">
-      <span class="prob-label">爆分機率</span>
-      <span class="prob-value tier-${tier}">${fmtProb(r.prob)}</span>
-    </div>
-    <div class="signals">${sigHTML}</div>
-    <div class="cmd-row${cmdCls}">${r.cmd}</div>
-    <div class="energy-bar">
-      <div class="energy-fill" style="width:${energyPct(r.prob)}%"></div>
-    </div>`;
-}
-="energy-bar">
-      <div class="energy-fill" style="width:${energyPct(r.prob)}%"></div>
-    </div>`;
+  const delay    = (((idx || 0) % 8) * 0.12).toFixed(2);
+  const sigHTML  = r.signals.map(function(s) {
+    return '<div class="signal-item"><span class="signal-tag tag-' + s.tag.toLowerCase() + '">' + s.tag + '級</span><span>' + s.text + '</span></div>';
+  }).join('');
+  const epct = energyPct(r.prob);
+  const badge = getBadgeLabel(r.prob);
+  const prob  = fmtProb(r.prob);
+  const parts = [
+    '<div class="card-header">',
+    '  <span class="card-room">' + r.name + '</span>',
+    '  <span class="card-tier-badge ' + badgeCls + '">' + badge + '</span>',
+    '</div>',
+    '<div class="prob-row">',
+    '  <span class="prob-label">爆分機率</span>',
+    '  <span class="prob-value tier-' + tier + '">' + prob + '</span>',
+    '</div>',
+    '<div class="signals">' + sigHTML + '</div>',
+    '<div class="cmd-row' + cmdCls + '">' + r.cmd + '</div>',
+    '<div class="energy-line" style="--delay:' + delay + 's">',
+    '  <div class="energy-fill" style="width:' + epct + '%"></div>',
+    '</div>',
+  ];
+  return parts.join('\n');
 }
