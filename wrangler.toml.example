@@ -1,0 +1,8 @@
+name = "novacore"
+pages_build_output_dir = "dist"
+compatibility_date = "2026-07-30"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "nova-core-licenses"
+database_id = "建立 D1 後填入 database_id"

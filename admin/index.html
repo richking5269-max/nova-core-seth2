@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>NOVA CORE｜授權管理中心</title>
+  <link rel="stylesheet" href="./admin.css" />
+</head>
+<body>
+  <div class="ambient-grid"></div>
+
+  <main id="loginView" class="login-view">
+    <section class="admin-login-card">
+      <div class="brand-symbol"><span></span></div>
+      <p class="eyebrow">NOVA CORE CONTROL ACCESS</p>
+      <h1>授權管理中心</h1>
+      <p class="subtitle">僅限管理員存取</p>
+      <form id="adminLoginForm" novalidate>
+        <label for="adminPassword">管理員密碼</label>
+        <input id="adminPassword" type="password" autocomplete="current-password" placeholder="輸入管理員密碼" />
+        <p id="loginError" class="form-message" aria-live="polite"></p>
+        <button id="adminLoginBtn" class="primary-btn" type="submit">登入後台</button>
+      </form>
+      <a class="back-link" href="../">返回 NOVA CORE 前台</a>
+    </section>
+  </main>
+
+  <main id="dashboardView" class="dashboard hidden">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-symbol small"><span></span></div>
+        <div>
+          <strong>NOVA CORE</strong>
+          <p>LICENSE CONTROL CENTER</p>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <span class="online-state"><i></i>管理終端已連線</span>
+        <button id="logoutBtn" class="outline-btn" type="button">登出</button>
+      </div>
+    </header>
+
+    <div class="dashboard-body">
+      <section class="page-heading">
+        <div>
+          <p class="eyebrow">LICENSE OPERATIONS</p>
+          <h1>授權帳號管理</h1>
+          <p>建立使用者、產生授權碼並管理存取權限。</p>
+        </div>
+        <button id="openCreateBtn" class="primary-btn compact" type="button">＋ 建立用戶</button>
+      </section>
+
+      <section class="stats-grid" aria-label="授權統計">
+        <article><span>全部帳號</span><strong id="totalCount">0</strong></article>
+        <article><span>已使用授權</span><strong id="usedCount">0</strong></article>
+        <article><span>尚未使用</span><strong id="unusedCount">0</strong></article>
+        <article><span>累計驗證</span><strong id="verificationCount">0</strong></article>
+      </section>
+
+      <section id="createPanel" class="panel create-panel hidden">
+        <div class="panel-heading">
+          <div><p class="eyebrow">CREATE ACCESS</p><h2>建立新用戶</h2></div>
+          <button id="closeCreateBtn" class="icon-btn" type="button" aria-label="關閉建立表單">×</button>
+        </div>
+        <form id="createUserForm" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="userAccount">用戶帳號</label>
+              <input id="userAccount" type="text" maxlength="60" autocomplete="off" placeholder="輸入朋友的帳號" />
+              <p id="accountError" class="field-error"></p>
+            </div>
+            <div class="field">
+              <label for="userNote">備註</label>
+              <input id="userNote" type="text" maxlength="300" autocomplete="off" placeholder="例如：小明／測試至月底" />
+              <p id="noteError" class="field-error"></p>
+            </div>
+          </div>
+          <p id="createError" class="form-message" aria-live="polite"></p>
+          <button id="createBtn" class="primary-btn" type="submit">確認並產生授權碼</button>
+        </form>
+      </section>
+
+      <section class="panel list-panel">
+        <div class="panel-heading list-heading">
+          <div><p class="eyebrow">ACCESS DIRECTORY</p><h2>用戶清單</h2></div>
+          <div class="list-tools">
+            <label class="search-box">
+              <span aria-hidden="true"></span>
+              <input id="searchInput" type="search" placeholder="搜尋帳號或備註" />
+            </label>
+            <button id="refreshListBtn" class="outline-btn" type="button">重新整理</button>
+          </div>
+        </div>
+        <div id="loadingState" class="empty-state">正在同步授權資料...</div>
+        <div id="emptyState" class="empty-state hidden">目前沒有使用者，請先建立第一個帳號。</div>
+        <div id="licenseList" class="license-list hidden"></div>
+        <p id="listError" class="form-message center" aria-live="polite"></p>
+      </section>
+    </div>
+  </main>
+
+  <dialog id="codeDialog" class="modal">
+    <div class="modal-icon success"><span></span></div>
+    <p class="eyebrow">LICENSE GENERATED</p>
+    <h2>授權碼建立完成</h2>
+    <p>請立即複製並傳給使用者。基於安全考量，關閉後無法再次查看完整授權碼。</p>
+    <div class="generated-account">帳號：<strong id="generatedAccount"></strong></div>
+    <div class="code-box">
+      <code id="generatedCode"></code>
+      <button id="copyCodeBtn" class="copy-btn" type="button">複製</button>
+    </div>
+    <p id="copyStatus" class="copy-status" aria-live="polite"></p>
+    <button id="closeCodeBtn" class="primary-btn" type="button">我已保存授權碼</button>
+  </dialog>
+
+  <dialog id="deleteDialog" class="modal danger-modal">
+    <div class="modal-icon danger">!</div>
+    <p class="eyebrow danger-text">DELETE ACCESS</p>
+    <h2>確定刪除這個用戶？</h2>
+    <p>刪除後，該授權碼會立即失效且無法復原。</p>
+    <div class="delete-target">帳號：<strong id="deleteAccount"></strong></div>
+    <p id="deleteError" class="form-message" aria-live="polite"></p>
+    <div class="modal-actions">
+      <button id="cancelDeleteBtn" class="outline-btn" type="button">取消</button>
+      <button id="confirmDeleteBtn" class="danger-btn" type="button">確認刪除</button>
+    </div>
+  </dialog>
+
+  <script src="./admin.js"></script>
+</body>
+</html>

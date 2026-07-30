@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.wrangler/
+.dev.vars
+wrangler.toml
+wrangler.json
+wrangler.jsonc
+*.log
+.pnpm-store/
