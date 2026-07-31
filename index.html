@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NOVA CORE 賽特 II&#65372;AI 實戰分析終端</title>
+  <title>NOVA CORE II｜電子輔助程式</title>
   <link rel="stylesheet" href="styles.css" />
   <script>
     (function(){
@@ -27,15 +27,24 @@
     <div class="scanlines"></div>
     <section class="login-card">
       <div class="terminal-dot-row"><span></span><span></span><span></span></div>
+      <div class="login-core" aria-hidden="true">
+        <span class="core-ring outer"></span>
+        <span class="core-ring inner"></span>
+        <strong>N</strong>
+      </div>
       <p class="eyebrow">NOVA CORE INTERNAL ACCESS</p>
-      <h1>NOVA CORE 賽特 II</h1>
-      <h2>AI 實戰分析終端</h2>
+      <h1>NOVA CORE II</h1>
+      <h2>電子輔助程式</h2>
       <p class="login-desc">請輸入授權碼進入觀察系統</p>
       <div class="password-row">
         <input id="accessCode" type="password" placeholder="輸入授權碼" autocomplete="off" />
         <button id="loginBtn" type="button">授權存取</button>
       </div>
       <p id="loginError" class="login-error"></p>
+      <div class="login-status-row" aria-hidden="true">
+        <span><i></i>ENCRYPTED CHANNEL</span>
+        <span>APAC NODE 02</span>
+      </div>
       <p class="login-note">僅供內部測試與數據觀察使用</p>
     </section>
   </div>
@@ -46,17 +55,28 @@
         <span class="brand-mark" aria-hidden="true"></span>
         <div>
           <h1>NOVA CORE</h1>
-          <p>SAITER-II SIGNAL TERMINAL</p>
+          <p>ELECTRONIC ASSISTANT SYSTEM</p>
         </div>
       </div>
-      <div class="connection"><span class="pulse"></span>終端連線正常</div>
+      <div class="header-statuses">
+        <span class="node-chip">NODE / AP-02</span>
+        <div class="connection"><span class="pulse"></span>輔助程式連線正常</div>
+      </div>
     </header>
 
     <section id="settingsScreen" class="screen-panel">
       <div class="panel-card settings-card">
-        <p class="eyebrow">TERMINAL CONFIGURATION</p>
-        <h2>系統參數設定</h2>
-        <p class="panel-subtitle">請完成以下資料設定以啟動終端分析</p>
+        <div class="panel-intro">
+          <div>
+            <p class="eyebrow">ASSISTANT CONFIGURATION</p>
+            <h2>系統參數設定</h2>
+            <p class="panel-subtitle">請完成以下資料設定以啟動輔助功能</p>
+          </div>
+          <div class="step-indicator" aria-hidden="true">
+            <span>01</span>
+            <small>CONFIG</small>
+          </div>
+        </div>
         <form id="settingsForm" novalidate>
           <div class="form-grid">
             <div class="field">
@@ -86,7 +106,7 @@
             </div>
             <div class="field full">
               <label for="tableNumber">桌號</label>
-              <input id="tableNumber" type="text" inputmode="numeric" placeholder="請輸入桌號" autocomplete="off" />
+              <input id="tableNumber" type="text" inputmode="numeric" maxlength="4" placeholder="請輸入您進入的房號" autocomplete="off" />
               <p id="tableNumberError" class="field-error"></p>
             </div>
           </div>
