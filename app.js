@@ -1,10 +1,10 @@
 "use strict";
 
 const games = [
-  { id: "seth1", name: "ATG－戰神賽特", freeSpinCostMultiplier: 100, signalSetId: "seth" },
-  { id: "seth2", name: "ATG－戰神賽特2 覺醒之力", freeSpinCostMultiplier: 200, signalSetId: "seth" },
-  { id: "red-three-kingdoms", name: "ATG－赤三國", freeSpinCostMultiplier: 100, signalSetId: "red-three-kingdoms" },
-  { id: "tiger-girl", name: "ATG－虎小妹", freeSpinCostMultiplier: 200, signalSetId: "tiger-girl" }
+  { id: "seth1", name: "ATG－戰神賽特", freeSpinCostMultiplier: 100, signalSetId: "seth", maxTableNumber: 4000 },
+  { id: "seth2", name: "ATG－戰神賽特2 覺醒之力", freeSpinCostMultiplier: 200, signalSetId: "seth", maxTableNumber: 4000 },
+  { id: "red-three-kingdoms", name: "ATG－赤三國", freeSpinCostMultiplier: 100, signalSetId: "red-three-kingdoms", maxTableNumber: 200 },
+  { id: "tiger-girl", name: "ATG－虎小妹", freeSpinCostMultiplier: 200, signalSetId: "tiger-girl", maxTableNumber: 3000 }
 ];
 
 const allowedBetAmounts = [
@@ -183,6 +183,26 @@ function isPositiveInteger(value) {
   return /^[1-9]\d*$/.test(value);
 }
 
+function getGameById(gameId) {
+  return games.find((game) => game.id === gameId);
+}
+
+function getTableNumberLimit(gameId) {
+  return getGameById(gameId)?.maxTableNumber || 4000;
+}
+
+function syncTableNumberLimit() {
+  const input = byId("tableNumber");
+  const game = getGameById(byId("game").value);
+  const maximum = game?.maxTableNumber || 4000;
+  input.maxLength = String(maximum).length;
+  input.setAttribute("aria-valuemax", String(maximum));
+  input.title = game ? `${game.name} 房號範圍：1～${maximum}` : "房號範圍依遊戲而定";
+  input.placeholder = game
+    ? `請輸入您進入的房號（1～${maximum}）`
+    : "請輸入您進入的房號";
+}
+
 function validateSettings() {
   const values = {
     device: byId("device").value,
@@ -191,20 +211,22 @@ function validateSettings() {
     gameId: byId("game").value,
     tableNumber: byId("tableNumber").value.trim()
   };
+  const selectedGame = getGameById(values.gameId);
+  const maximumTableNumber = getTableNumberLimit(values.gameId);
   const errors = {
     device: values.device ? "" : "請選擇裝置",
     account: values.account.length >= 2 ? "" : "請輸入至少 2 個字元的會員帳號",
     amount: isPositiveInteger(values.amount) ? "" : "請輸入有效金額",
     game: values.gameId ? "" : "請選擇遊戲",
-    tableNumber: isPositiveInteger(values.tableNumber) && Number(values.tableNumber) <= 4000
+    tableNumber: isPositiveInteger(values.tableNumber) && Number(values.tableNumber) <= maximumTableNumber
       ? ""
-      : "桌號需為 1～4000"
+      : `桌號需為 1～${maximumTableNumber}`
   };
   Object.entries(errors).forEach(([id, message]) => setError(id, message));
   if (Object.values(errors).some(Boolean)) return null;
   values.amount = Number(values.amount);
   values.tableNumber = Number(values.tableNumber);
-  values.gameName = games.find((game) => game.id === values.gameId).name;
+  values.gameName = selectedGame.name;
   byId("account").value = values.account;
   return values;
 }
@@ -712,6 +734,7 @@ function resetToSettings() {
   state.runtimeStartedAt = null;
   state.processingLocked = false;
   form.reset();
+  syncTableNumberLimit();
   form.querySelectorAll(".field-error").forEach((element) => { element.textContent = ""; });
   form.querySelectorAll(".invalid").forEach((element) => element.classList.remove("invalid"));
   byId("signalResults").replaceChildren();
@@ -739,6 +762,7 @@ form.querySelectorAll("input, select").forEach((element) => {
     element.classList.remove("invalid");
   });
 });
+byId("game").addEventListener("change", syncTableNumberLimit);
 byId("resetBtn").addEventListener("click", resetToSettings);
 window.addEventListener("beforeunload", () => {
   clearProcessingTimers();
@@ -746,3 +770,4 @@ window.addEventListener("beforeunload", () => {
 });
 
 populateGames();
+syncTableNumberLimit();
