@@ -1,7 +1,7 @@
 "use strict";
 
 const games = [
-  { id: "seth1", name: "ATG－戰神賽特", freeSpinCostMultiplier: 100, signalSetId: "seth", maxTableNumber: 4000 },
+  { id: "seth1", name: "ATG－戰神賽特", freeSpinCostMultiplier: 100, signalSetId: "seth", maxTableNumber: 1300 },
   { id: "seth2", name: "ATG－戰神賽特2 覺醒之力", freeSpinCostMultiplier: 200, signalSetId: "seth", maxTableNumber: 4000 },
   { id: "red-three-kingdoms", name: "ATG－赤三國", freeSpinCostMultiplier: 100, signalSetId: "red-three-kingdoms", maxTableNumber: 200 },
   { id: "tiger-girl", name: "ATG－虎小妹", freeSpinCostMultiplier: 200, signalSetId: "tiger-girl", maxTableNumber: 3000 }
