@@ -15,7 +15,7 @@ const allowedBetAmounts = [
   1400, 1440, 1600, 1800, 2000
 ];
 
-const signalSearchReserveMultiplier = 100;
+const minimumFreeSpinPurchases = 3;
 
 const sethSignalIcons = [
   { id: "snake", name: "蛇", image: "./signals/snake.png", maxQuantity: 7 },
@@ -439,18 +439,17 @@ function selectWeightedSuggestedBet(safeBets, random = Math.random) {
 function calculateBetPlan(amount, gameId, random = Math.random) {
   const game = games.find((item) => item.id === gameId);
   const freeSpinMultiplier = game ? game.freeSpinCostMultiplier : 200;
-  const safeBetCeiling = Math.floor(
-    amount / (freeSpinMultiplier + signalSearchReserveMultiplier)
-  );
+  const requiredCapitalMultiplier = freeSpinMultiplier * minimumFreeSpinPurchases;
+  const safeBetCeiling = Math.floor(amount / requiredCapitalMultiplier);
   const safeBets = allowedBetAmounts.filter((bet) => bet <= safeBetCeiling);
 
   if (safeBets.length === 0) {
     return {
       suggestedBet: null,
       freeSpinCost: null,
-      signalSearchReserve: amount,
-      minimumRequired: allowedBetAmounts[0] *
-        (freeSpinMultiplier + signalSearchReserveMultiplier)
+      remainingBalance: amount,
+      purchaseCapacity: 0,
+      minimumRequired: allowedBetAmounts[0] * requiredCapitalMultiplier
     };
   }
 
@@ -459,7 +458,8 @@ function calculateBetPlan(amount, gameId, random = Math.random) {
   return {
     suggestedBet,
     freeSpinCost,
-    signalSearchReserve: amount - freeSpinCost,
+    remainingBalance: amount - freeSpinCost,
+    purchaseCapacity: Math.floor(amount / freeSpinCost),
     minimumRequired: 0
   };
 }
