@@ -131,7 +131,8 @@ function renderLicenses() {
   const items = state.licenses.filter((item) => {
     if (!query) return true;
     return String(item.account).toLocaleLowerCase("zh-TW").includes(query)
-      || String(item.note || "").toLocaleLowerCase("zh-TW").includes(query);
+      || String(item.note || "").toLocaleLowerCase("zh-TW").includes(query)
+      || String(item.license_code || "").toLocaleLowerCase("zh-TW").includes(query);
   });
   const list = byId("licenseList");
   list.replaceChildren();
@@ -142,8 +143,12 @@ function renderLicenses() {
     const row = document.createElement("article");
     row.className = "license-row";
     const account = createCell("用戶帳號", item.account, "account");
-    const note = createCell("備註", item.note || "—", "note");
-    const code = createCell("授權碼", `NOVA-••••-••••-${item.code_last4}`, "code");
+    const note = createCell("啟用日期/代理線", item.note || "—", "note");
+    const code = createCell(
+      "授權碼",
+      item.license_code || `舊資料無法還原（末四碼 ${item.code_last4 || "----"}）`,
+      "code"
+    );
     code.querySelector("span").classList.add("code-tail");
     const created = createCell("建立時間", formatDate(item.created_at), "created");
     const usage = createCell("使用狀態", Number(item.use_count) > 0 ? `已驗證 ${item.use_count} 次` : "尚未使用", "last-used");
@@ -200,7 +205,7 @@ async function handleCreate(event) {
     return;
   }
   if (note.length > 300) {
-    byId("noteError").textContent = "備註不可超過 300 個字元";
+    byId("noteError").textContent = "啟用日期/代理線不可超過 300 個字元";
     return;
   }
   setBusy(button, true, "正在建立...", "確認並產生授權碼");

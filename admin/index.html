@@ -67,12 +67,12 @@
           <div class="form-grid">
             <div class="field">
               <label for="userAccount">用戶帳號</label>
-              <input id="userAccount" type="text" maxlength="60" autocomplete="off" placeholder="輸入朋友的帳號" />
+              <input id="userAccount" type="text" maxlength="60" autocomplete="off" placeholder="請輸入會員帳號" />
               <p id="accountError" class="field-error"></p>
             </div>
             <div class="field">
-              <label for="userNote">備註</label>
-              <input id="userNote" type="text" maxlength="300" autocomplete="off" placeholder="例如：小明／測試至月底" />
+              <label for="userNote">啟用日期/代理線</label>
+              <input id="userNote" type="text" maxlength="300" autocomplete="off" placeholder="範例：0730/SK887" />
               <p id="noteError" class="field-error"></p>
             </div>
           </div>
@@ -87,7 +87,7 @@
           <div class="list-tools">
             <label class="search-box">
               <span aria-hidden="true"></span>
-              <input id="searchInput" type="search" placeholder="搜尋帳號或備註" />
+              <input id="searchInput" type="search" placeholder="搜尋帳號或啟用資料" />
             </label>
             <button id="refreshListBtn" class="outline-btn" type="button">重新整理</button>
           </div>
@@ -104,7 +104,7 @@
     <div class="modal-icon success"><span></span></div>
     <p class="eyebrow">LICENSE GENERATED</p>
     <h2>授權碼建立完成</h2>
-    <p>請立即複製並傳給使用者。基於安全考量，關閉後無法再次查看完整授權碼。</p>
+    <p>完整授權碼已保存於後台清單，可隨時複製並傳給使用者。</p>
     <div class="generated-account">帳號：<strong id="generatedAccount"></strong></div>
     <div class="code-box">
       <code id="generatedCode"></code>

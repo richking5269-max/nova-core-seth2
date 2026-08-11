@@ -8,7 +8,7 @@ export async function onRequestGet(context) {
     await ensureDatabase(context.env);
     await requireAdmin(context.request, context.env);
     const result = await context.env.DB.prepare(
-      `SELECT id, account, note, code_last4, active, created_at, last_used_at, use_count
+      `SELECT id, account, note, code_last4, license_code, active, created_at, last_used_at, use_count
        FROM licenses
        ORDER BY created_at DESC
        LIMIT 500`
@@ -31,7 +31,7 @@ export async function onRequestPost(context) {
       throw new HttpError(400, "帳號需為 2～60 個字元");
     }
     if (note.length > 300) {
-      throw new HttpError(400, "備註不可超過 300 個字元");
+      throw new HttpError(400, "啟用日期/代理線不可超過 300 個字元");
     }
 
     for (let attempt = 0; attempt < 5; attempt += 1) {
@@ -41,14 +41,15 @@ export async function onRequestPost(context) {
       try {
         await context.env.DB.prepare(
           `INSERT INTO licenses
-             (id, account, note, code_hash, code_last4, active, created_at, use_count)
-           VALUES (?, ?, ?, ?, ?, 1, ?, 0)`
+             (id, account, note, code_hash, code_last4, license_code, active, created_at, use_count)
+           VALUES (?, ?, ?, ?, ?, ?, 1, ?, 0)`
         ).bind(
           crypto.randomUUID(),
           account,
           note,
           codeHash,
           normalized.slice(-4),
+          code,
           new Date().toISOString()
         ).run();
         return json({

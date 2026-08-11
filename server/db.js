@@ -10,6 +10,7 @@ export async function ensureDatabase(env) {
         note TEXT NOT NULL DEFAULT '',
         code_hash TEXT NOT NULL UNIQUE,
         code_last4 TEXT NOT NULL,
+        license_code TEXT,
         active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1)),
         created_at TEXT NOT NULL,
         last_used_at TEXT,
@@ -31,5 +32,15 @@ export async function ensureDatabase(env) {
       )`
     )
   ]);
+
+  const columns = await env.DB.prepare("PRAGMA table_info(licenses)").all();
+  const hasLicenseCode = (columns.results || []).some((column) => column.name === "license_code");
+  if (!hasLicenseCode) {
+    try {
+      await env.DB.prepare("ALTER TABLE licenses ADD COLUMN license_code TEXT").run();
+    } catch (error) {
+      if (!String(error && error.message || "").includes("duplicate column name")) throw error;
+    }
+  }
   initialized = true;
 }
