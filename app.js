@@ -474,7 +474,8 @@ function shuffleArray(items) {
 }
 
 function generateFreeSpinSignals(items) {
-  return shuffleArray(items).slice(0, randomInteger(2, 3)).map((signal) => ({
+  const signalCount = Math.random() < 0.7 ? 2 : 3;
+  return shuffleArray(items).slice(0, signalCount).map((signal) => ({
     ...signal,
     quantity: randomInteger(
       1,
