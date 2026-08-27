@@ -10,6 +10,8 @@ const loginView = byId("loginView");
 const dashboardView = byId("dashboardView");
 const codeDialog = byId("codeDialog");
 const deleteDialog = byId("deleteDialog");
+const passwordDialog = byId("passwordDialog");
+let toastTimer = null;
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
@@ -34,6 +36,14 @@ async function api(path, options = {}) {
 function setBusy(button, busy, busyText, normalText) {
   button.disabled = busy;
   button.textContent = busy ? busyText : normalText;
+}
+
+function showToast(message) {
+  const toast = byId("adminToast");
+  toast.textContent = message;
+  toast.classList.add("visible");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove("visible"), 2600);
 }
 
 function showLogin() {
@@ -91,6 +101,40 @@ async function handleLogout() {
   } finally {
     button.disabled = false;
     showLogin();
+  }
+}
+
+function openPasswordDialog() {
+  byId("passwordForm").reset();
+  byId("passwordError").textContent = "";
+  passwordDialog.showModal();
+  byId("currentAdminPassword").focus();
+}
+
+async function handlePasswordChange(event) {
+  event.preventDefault();
+  const currentPassword = byId("currentAdminPassword").value;
+  const newPassword = byId("newAdminPassword").value;
+  const confirmPassword = byId("confirmAdminPassword").value;
+  const button = byId("changePasswordBtn");
+  const error = byId("passwordError");
+  error.textContent = "";
+  if (!currentPassword) { error.textContent = "請輸入目前密碼"; return; }
+  if (newPassword.length < 6) { error.textContent = "新密碼至少需要 6 個字元"; return; }
+  if (newPassword !== confirmPassword) { error.textContent = "兩次輸入的新密碼不一致"; return; }
+  setBusy(button, true, "更新中...", "確認更改");
+  try {
+    const data = await api("/api/admin/password", {
+      method: "POST",
+      body: JSON.stringify({ currentPassword, newPassword, confirmPassword })
+    });
+    byId("passwordForm").reset();
+    passwordDialog.close();
+    showToast(data.message || "管理員密碼已更新");
+  } catch (requestError) {
+    error.textContent = requestError.message;
+  } finally {
+    setBusy(button, false, "更新中...", "確認更改");
   }
 }
 
@@ -273,6 +317,9 @@ async function confirmDelete() {
 
 byId("adminLoginForm").addEventListener("submit", handleLogin);
 byId("logoutBtn").addEventListener("click", handleLogout);
+byId("openPasswordBtn").addEventListener("click", openPasswordDialog);
+byId("passwordForm").addEventListener("submit", handlePasswordChange);
+byId("cancelPasswordBtn").addEventListener("click", () => passwordDialog.close());
 byId("openCreateBtn").addEventListener("click", () => toggleCreatePanel(true));
 byId("closeCreateBtn").addEventListener("click", () => toggleCreatePanel(false));
 byId("createUserForm").addEventListener("submit", handleCreate);

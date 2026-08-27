@@ -281,6 +281,13 @@ input:focus {
 .danger-btn { min-height: 42px; border: 1px solid var(--pink); background: rgba(160,25,75,.35); color: #ffc2d8; font-weight: 700; }
 .danger-btn:hover { background: rgba(190,30,88,.48); box-shadow: 0 8px 24px rgba(255,75,143,.15); }
 
+.password-modal { max-height: calc(100dvh - 30px); margin: auto; overflow-y: auto; }
+.password-form { margin-top: 20px; display: grid; gap: 13px; text-align: left; }
+.password-form .modal-actions { margin-top: 5px; }
+.modal-icon.security { color: var(--gold); border: 1px solid var(--gold); box-shadow: 0 0 22px rgba(233,198,107,.18); }
+.toast { position: fixed; z-index: 100; right: 22px; bottom: 22px; max-width: min(420px, calc(100% - 44px)); padding: 12px 17px; color: #fff0bc; border: 1px solid rgba(233,198,107,.34); border-radius: 9px; background: rgba(5,18,32,.97); box-shadow: 0 18px 50px rgba(0,0,0,.5); opacity: 0; transform: translateY(10px); pointer-events: none; transition: .2s; }
+.toast.visible { opacity: 1; transform: none; }
+
 @keyframes card-enter { from { opacity: 0; transform: translateY(12px) scale(.98); } }
 @keyframes core-pulse { 50% { opacity: .35; transform: scale(.7); } }
 @keyframes panel-enter { from { opacity: 0; transform: translateY(-8px); } }
@@ -295,6 +302,8 @@ input:focus {
 @media (max-width: 620px) {
   .admin-login-card { padding: 34px 23px 30px; }
   .online-state { display: none; }
+  .topbar-actions { flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
+  #openPasswordBtn { order: 3; width: 100%; }
   .dashboard-body { width: min(100% - 22px, 1180px); padding-top: 28px; }
   .page-heading { display: block; }
   .primary-btn.compact { width: 100%; margin-top: 18px; }
@@ -306,6 +315,7 @@ input:focus {
   .license-cell.note, .license-cell.created, .license-cell.last-used { display: none; }
   .panel { padding: 18px 13px; }
   .modal { padding: 28px 20px; }
+  .toast { right: 12px; bottom: 12px; left: 12px; max-width: none; text-align: center; }
 }
 @media (max-width: 350px) {
   .stats-grid { gap: 7px; }

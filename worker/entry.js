@@ -1,6 +1,7 @@
 import { onRequestPost as adminLogin } from "../functions/api/admin/login.js";
 import { onRequestPost as adminLogout } from "../functions/api/admin/logout.js";
 import { onRequestGet as adminSession } from "../functions/api/admin/session.js";
+import { onRequestPost as changeAdminPassword } from "../functions/api/admin/password.js";
 import {
   onRequestGet as listLicenses,
   onRequestPost as createLicense
@@ -44,6 +45,9 @@ export default {
     }
     if (url.pathname === "/api/admin/session") {
       return request.method === "GET" ? adminSession(context) : methodNotAllowed();
+    }
+    if (url.pathname === "/api/admin/password") {
+      return request.method === "POST" ? changeAdminPassword(context) : methodNotAllowed();
     }
     if (url.pathname === "/api/admin/licenses") {
       if (request.method === "GET") return listLicenses(context);

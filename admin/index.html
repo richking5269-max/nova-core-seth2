@@ -37,6 +37,7 @@
       </div>
       <div class="topbar-actions">
         <span class="online-state"><i></i>管理終端已連線</span>
+        <button id="openPasswordBtn" class="outline-btn" type="button">更改後台密碼</button>
         <button id="logoutBtn" class="outline-btn" type="button">登出</button>
       </div>
     </header>
@@ -126,6 +127,22 @@
       <button id="confirmDeleteBtn" class="danger-btn" type="button">確認刪除</button>
     </div>
   </dialog>
+
+  <dialog id="passwordDialog" class="modal password-modal">
+    <div class="modal-icon security">⌁</div>
+    <p class="eyebrow">SECURITY CREDENTIAL</p>
+    <h2>更改後台密碼</h2>
+    <p>更新後，其他已登入的後台工作階段會立即失效。</p>
+    <form id="passwordForm" class="password-form" novalidate>
+      <div><label for="currentAdminPassword">目前密碼</label><input id="currentAdminPassword" type="password" maxlength="200" autocomplete="current-password" /></div>
+      <div><label for="newAdminPassword">新密碼</label><input id="newAdminPassword" type="password" minlength="6" maxlength="200" autocomplete="new-password" /></div>
+      <div><label for="confirmAdminPassword">再次輸入新密碼</label><input id="confirmAdminPassword" type="password" minlength="6" maxlength="200" autocomplete="new-password" /></div>
+      <p id="passwordError" class="form-message" aria-live="polite"></p>
+      <div class="modal-actions"><button id="cancelPasswordBtn" class="outline-btn" type="button">取消</button><button id="changePasswordBtn" class="primary-btn" type="submit">確認更改</button></div>
+    </form>
+  </dialog>
+
+  <div id="adminToast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="./admin.js"></script>
 </body>

@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler pages dev .",
+    "test": "node --test",
     "build": "node scripts/build.mjs",
     "deploy": "node scripts/build.mjs && cd dist && wrangler pages deploy . --project-name=novacore --no-bundle",
-    "check": "node --check app.js && node --check admin/admin.js"
+    "check": "node --check app.js && node --check admin/admin.js && node --check server/admin-password.js && node --check worker/entry.js"
   },
   "devDependencies": {
     "rollup": "4.62.3",

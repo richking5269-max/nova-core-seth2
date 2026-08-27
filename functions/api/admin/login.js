@@ -1,4 +1,4 @@
-import { constantTimeEqual } from "../../../server/crypto.js";
+import { verifyAdminPassword } from "../../../server/admin-password.js";
 import { createAdminSession, getClientKey } from "../../../server/auth.js";
 import { ensureDatabase } from "../../../server/db.js";
 import { assertSameOrigin, handleError, HttpError, json, readJson } from "../../../server/http.js";
@@ -27,7 +27,7 @@ export async function onRequestPost(context) {
       throw new HttpError(429, "嘗試次數過多，請 15 分鐘後再試");
     }
 
-    if (!constantTimeEqual(password, context.env.ADMIN_PASSWORD)) {
+    if (!(await verifyAdminPassword(context.env, password))) {
       const previousFailures = attempt && now - Number(attempt.updated_at) < RESET_WINDOW_MS
         ? Number(attempt.failures)
         : 0;

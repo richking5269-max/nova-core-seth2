@@ -17,6 +17,9 @@
 
 不要把這兩個值寫入 GitHub、JavaScript、HTML、`wrangler.toml` 或任何截圖。
 
+後台登入後可使用「更改後台密碼」。新密碼會以 PBKDF2-SHA256 雜湊保存於
+D1 的 `admin_credentials`，不保存明文；更新後其他舊工作階段會立即失效。
+
 ## 建立 D1
 
 ```powershell

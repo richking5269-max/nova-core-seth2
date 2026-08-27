@@ -1,5 +1,6 @@
 import { HttpError } from "./http.js";
 import { sha256, signSession, verifySession } from "./crypto.js";
+import { getAdminCredentialVersion } from "./admin-password.js";
 
 const COOKIE_NAME = "nova_admin_session";
 const SESSION_SECONDS = 12 * 60 * 60;
@@ -22,8 +23,10 @@ function requireSecrets(env) {
 export async function createAdminSession(request, env) {
   requireSecrets(env);
   const expiresAt = Math.floor(Date.now() / 1000) + SESSION_SECONDS;
+  const credentialVersion = await getAdminCredentialVersion(env);
   const token = await signSession({
     role: "admin",
+    credentialVersion,
     exp: expiresAt,
     nonce: crypto.randomUUID()
   }, env.ADMIN_SESSION_SECRET);
@@ -41,6 +44,10 @@ export async function requireAdmin(request, env) {
   const payload = await verifySession(getCookie(request, COOKIE_NAME), env.ADMIN_SESSION_SECRET);
   if (!payload || payload.role !== "admin") {
     throw new HttpError(401, "請先登入管理後台");
+  }
+  const credentialVersion = await getAdminCredentialVersion(env);
+  if (Number(payload.credentialVersion || 0) !== credentialVersion) {
+    throw new HttpError(401, "管理員密碼已變更，請重新登入");
   }
   return payload;
 }
